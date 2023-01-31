@@ -2,8 +2,8 @@ package models
 
 import (
 	"github.com/lib/pq"
-	//"gorm.io/driver/postgres"
-	//"gorm.io/gorm"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 //now firstly we have to create a "Book" struct for our library. library will contain this "Book" objects. we have to
@@ -27,4 +27,26 @@ type User struct {
 	//our feedbacks slice will hold the ID's of the books that user gave feedback
 	Feedbacks []string `json:"feedbacks"`
 	Purchases []Book   `json:"purchases"`
+}
+
+var DB *gorm.DB
+
+// ConnectDatabase function will connect database to our local Postgres database and then return pointer to this database (Global variable DB will keep this reference)
+func ConnectDatabase() {
+	//let's give our local PostgresSQL server URL.
+	dns := "host=localhost user=postgres password=ys120503 dbname=Library port=5432"
+	database, err1 := gorm.Open(postgres.Open(dns), &gorm.Config{})
+
+	if err1 != nil {
+		panic("Failed to connect to database")
+		return
+	}
+
+	err2 := database.AutoMigrate(&Book{})
+	if err2 != nil {
+		panic("Cannot migrate")
+		return
+	}
+
+	DB = database
 }
