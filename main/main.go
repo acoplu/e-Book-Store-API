@@ -23,7 +23,8 @@ func main() {
 	router.PATCH("/feedback/:id", giveFeedback)
 	//now let's define a shopping card for user's purchases
 	router.GET("/cart", getCard)
-
+	//now let's define a route for customers to make be able to purchase
+	router.PATCH("/purchase", buyBook)
 	//to run a local server in :8080 port
 	err := router.Run("localhost:8080")
 	if err != nil {
@@ -152,4 +153,44 @@ func getCard(c *gin.Context) {
 	}
 	c.IndentedJSON(200, user.Purchases)
 	c.IndentedJSON(200, totalCost)
+}
+
+// customers who wish to purchase can select their books into the website's cart
+func buyBook(c *gin.Context) {
+	id, ok := c.GetQuery("id")
+	var matchedBook models.Book
+
+	if !ok {
+		c.IndentedJSON(404, gin.H{"message": "Invalid ID"})
+		return
+	}
+
+	//now this chaining method calling will take our Param in URL path as ID and then check if there is a book with this
+	//ID. then it will bind the matched book to our newBook variable. if there will be error than err cannot be nil, and
+	//we have to give 404
+	if err := models.DB.Where("id = ?", id).First(&matchedBook).Error; err != nil {
+		c.IndentedJSON(404, gin.H{"message": "No matched book"})
+		return
+	}
+
+	//and now check if there is a 0 book
+	if matchedBook.Quantity <= 0 {
+		c.IndentedJSON(404, gin.H{"message": "Book is not available"})
+		return
+	}
+
+	bookForBuy := matchedBook
+	//if user buys a book decrement the quantity 1 in database
+	models.DB.Model(&matchedBook).Update("Quantity", matchedBook.Quantity-1)
+	for i := 0; i < len(user.Purchases); i++ {
+		if user.Purchases[i].Name == bookForBuy.Name {
+			user.Purchases[i].Quantity++
+			c.IndentedJSON(200, gin.H{"message": "Added to shopping cart"})
+			return
+		}
+	}
+
+	bookForBuy.Quantity = 1
+	user.Purchases = append(user.Purchases, bookForBuy)
+	c.IndentedJSON(200, gin.H{"message": "Added to shopping cart"})
 }
