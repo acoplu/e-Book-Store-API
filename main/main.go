@@ -17,6 +17,8 @@ func main() {
 	router.POST("/books", addBook)
 	//let's define a demo route that show us our database, so we can check if our routes work well
 	router.GET("/books", getBooks)
+	//now let's define a route for customers. because customers will be able to view the book and see the other books with the same author
+	router.GET("/books/:id", checkBook)
 
 	//to run a local server in :8080 port
 	err := router.Run("localhost:8080")
@@ -63,4 +65,36 @@ func addBook(c *gin.Context) {
 	//if the error is null it means JSON request is valid and the method bound this JSON to object, and there
 	//is no other book with the same ID, so we can add our book to our database
 	c.IndentedJSON(200, newBook)
+}
+
+func checkBook(c *gin.Context) {
+	//in this function customers will provide a book name, and they can see the details of book like reviews and else.
+	//moreover they can see the other books with the same author
+	id := c.Param("id")
+
+	//now let's define an empty book object and call Where function with *orm.DB instance, so we can take the ID of the
+	//book
+	var newBook models.Book
+
+	//now this chaining method calling will take our Param in URL path as ID and then check if there is a book with this
+	//ID. then it will bind the matched book to our newBook variable. if there will be error than err cannot be nil, and
+	//we have to give 404
+	if err := models.DB.Where("id = ?", id).First(&newBook).Error; err != nil {
+		c.IndentedJSON(404, gin.H{"message": "No matched book"})
+		return
+	}
+
+	//let's define a slice to keep the same name authors, and then we can print them easily
+	var books, sameAuthor []models.Book
+	models.DB.Find(&books)
+	for i := 0; i < len(books); i++ {
+		if newBook.Author == books[i].Author && newBook.ID != books[i].ID {
+			sameAuthor = append(sameAuthor, books[i])
+		}
+	}
+	c.IndentedJSON(200, newBook)
+	//if the sameAuthor slice is nil then it will print null on screen, so let's handle it
+	if sameAuthor != nil {
+		c.IndentedJSON(200, sameAuthor)
+	}
 }
