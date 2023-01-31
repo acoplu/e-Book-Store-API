@@ -1,2 +1,2 @@
-# CelikGroupCRUDAPI
- CRUD API for e-Book Store with PostgreSQL Database
+# e-Book Store API
+ RESTful API for e-Book Store with PostgreSQL Database
