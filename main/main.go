@@ -19,6 +19,8 @@ func main() {
 	router.GET("/books", getBooks)
 	//now let's define a route for customers. because customers will be able to view the book and see the other books with the same author
 	router.GET("/books/:id", checkBook)
+	//now let's define a route for providing feedback. we can use it with PATCH HTTP request
+	router.PATCH("/feedback/:id", giveFeedback)
 
 	//to run a local server in :8080 port
 	err := router.Run("localhost:8080")
@@ -97,4 +99,39 @@ func checkBook(c *gin.Context) {
 	if sameAuthor != nil {
 		c.IndentedJSON(200, sameAuthor)
 	}
+}
+
+// now in this function we will take the ID of the book, the rating and the short comment about the book
+func giveFeedback(c *gin.Context) {
+	//for taking the ID of the book that customer will give feedback lets use GetQuery method
+	id := c.Param("id")
+
+	//let's get the request JSON and bind it to exBook. We will take the request through this Book
+	var exBook, originalBook models.Book
+	if err := c.BindJSON(&exBook); err != nil {
+		c.IndentedJSON(404, gin.H{"message": "Invalid data"})
+		return
+	}
+
+	//now this chaining method calling will take our Param in URL path as ID and then check if there is a book with this
+	//ID. then it will bind the matched book to our newBook variable. if there will be error than err cannot be nil, and
+	//we have to give 404
+	if err := models.DB.Where("id = ?", id).First(&originalBook).Error; err != nil {
+		c.IndentedJSON(404, gin.H{"message": "No matched book"})
+		return
+	}
+
+	//now check if user has such feedback on this book
+	for i := 0; i < len(user.Feedbacks); i++ {
+		if user.Feedbacks[i] == originalBook.ID {
+			c.IndentedJSON(404, gin.H{"message": "Already given a feedback"})
+			return
+		}
+	}
+
+	//let's update in database
+	models.DB.Model(&originalBook).Update("Rating", (originalBook.Rating+exBook.Rating)/float64(len(originalBook.Comments)+1))
+	models.DB.Model(&originalBook).Update("Comments", append(originalBook.Comments, exBook.Comments[0]))
+	user.Feedbacks = append(user.Feedbacks, originalBook.ID)
+	c.IndentedJSON(200, originalBook)
 }
