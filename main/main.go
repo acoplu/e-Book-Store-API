@@ -1,7 +1,7 @@
 package main
 
 import (
-	"CelikGroupCRUDAPI/models" //user and book struct
+	"CelikGroupCRUDAPI/models"    //user and book struct
 	"github.com/gin-gonic/gin" //golang http web framework
 )
 

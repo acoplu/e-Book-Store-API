@@ -1,0 +1,57 @@
+#PATCH localhost:8080/feedback/13
+#Content-Type: application/json
+#
+#{
+#  "rating": 10,
+#  "comments": ["I think it is a masterpiece"]
+#}
+###
+#PATCH localhost:8080/purchase?id=8
+#Content-Type: application/json
+
+#GET localhost:8080/books/16
+#Accept: application/json
+
+#GET localhost:8080/books/5
+#Accept: application/json
+
+
+#POST localhost:8080/books
+#Content-Type: application/json#
+#
+#{
+#    "id": "13",
+#    "name": "Fairy Tale",
+#    "author": "Stephen King",
+#    "price": 64.99,
+#    "rating": 7,
+#    "comments": ["Sooo scary"],
+#    "quantity": 4
+#}
+
+###
+#POST localhost:8080/books
+#Content-Type: application/json
+#
+#{
+#"id": "10",
+#"name": "Euclid's Elements",
+#"author": "Euclid",
+#"price": 89.99,
+#"rating": 7,
+#"comments": ["Good Book", "It is not for beginners"],
+#"quantity": 2
+#}
+
+#POST localhost:8080/raps
+#Content-Type: application/json
+#
+#{
+# "id": "7",
+#  "name": "Drake",
+#  "author": "Drake",
+#  "price": 45.99,
+#  "rating": 8,
+#  "comments": ["Hood","Wow"],
+#  "quantity": 1
+#}
