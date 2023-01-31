@@ -15,12 +15,26 @@ func main() {
 
 	//first publishers of books have to update book info frequently so let's define a route for this
 	router.POST("/books", addBook)
+	//let's define a demo route that show us our database, so we can check if our routes work well
+	router.GET("/books", getBooks)
 
 	//to run a local server in :8080 port
 	err := router.Run("localhost:8080")
 	if err != nil {
 		return
 	}
+}
+
+// this handler function will show all books
+func getBooks(c *gin.Context) {
+	//first create our Book array object
+	var books []models.Book
+
+	//now this Find function will insert all Book instances to Book array. we use pointer to array otherwise the value
+	//of the array won't change. because golang is pass-by-value
+	models.DB.Find(&books)
+
+	c.IndentedJSON(200, books)
 }
 
 // our all handler functions must take gin.Context pointer as parameter
