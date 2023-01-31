@@ -21,6 +21,8 @@ func main() {
 	router.GET("/books/:id", checkBook)
 	//now let's define a route for providing feedback. we can use it with PATCH HTTP request
 	router.PATCH("/feedback/:id", giveFeedback)
+	//now let's define a shopping card for user's purchases
+	router.GET("/cart", getCard)
 
 	//to run a local server in :8080 port
 	err := router.Run("localhost:8080")
@@ -134,4 +136,20 @@ func giveFeedback(c *gin.Context) {
 	models.DB.Model(&originalBook).Update("Comments", append(originalBook.Comments, exBook.Comments[0]))
 	user.Feedbacks = append(user.Feedbacks, originalBook.ID)
 	c.IndentedJSON(200, originalBook)
+}
+
+// the bookstore can see the ordered books list and details in shopping card section. so let's define a shopping card handler func
+func getCard(c *gin.Context) {
+	if user.Purchases == nil {
+		c.IndentedJSON(200, gin.H{"message": "No purchases yet"})
+		return
+	}
+
+	//now we have to print the details of the list and the total cost
+	var totalCost float64
+	for i := 0; i < len(user.Purchases); i++ {
+		totalCost = totalCost + (user.Purchases[i].Price)*(float64(user.Purchases[i].Quantity))
+	}
+	c.IndentedJSON(200, user.Purchases)
+	c.IndentedJSON(200, totalCost)
 }
