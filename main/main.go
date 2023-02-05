@@ -1,8 +1,9 @@
 package main
 
 import (
-	"CelikGroupCRUDAPI/models"    //user and book struct
+	"CelikGroupCRUDAPI/models" //user and book struct
 	"github.com/gin-gonic/gin" //golang http web framework
+	"strconv"
 )
 
 // define our User object to keep user's feedbacks and purchases
@@ -40,6 +41,21 @@ func getBooks(c *gin.Context) {
 	//now this Find function will insert all Book instances to Book array. we use pointer to array otherwise the value
 	//of the array won't change. because golang is pass-by-value
 	models.DB.Find(&books)
+
+	//listing all books database sorted by IDs. because we keep IDs in string data type we have to parse it
+	for i := 0; i < len(books); i++ {
+		for j := 0; j < len(books)-1; j++ {
+			num1, err1 := strconv.Atoi(books[j].ID)
+			num2, err2 := strconv.Atoi(books[j+1].ID)
+			if err1 == nil && err2 == nil {
+				if num1 > num2 {
+					temp := books[j]
+					books[j] = books[j+1]
+					books[j+1] = temp
+				}
+			}
+		}
+	}
 
 	c.IndentedJSON(200, books)
 }
